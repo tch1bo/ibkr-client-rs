@@ -1,0 +1,8 @@
+[build]
+target = "index.html"
+dist = "dist"
+public_url = "/"
+
+[[proxy]]
+backend="https://localhost:5000/api/v1/"
+insecure=true
