@@ -1,32 +1,25 @@
+mod components;
 mod models;
 mod requests;
 mod router;
 mod routes;
 
+use components::error::ErrorHandler;
+use components::global_state_provider::GlobalStateProvider;
 use router::{switch, Route};
+use wasm_logger;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-struct App {}
-
-enum Msg {}
-
-#[function_component(Main)]
+#[function_component(App)]
 fn app() -> Html {
     html! {
-        <BrowserRouter>
-            <Switch<Route> render={Switch::render(switch)} />
-        </BrowserRouter>
-    }
-}
-
-impl App {
-    fn view_nav(&self, _ctx: &Context<Self>) -> Html {
-        html! {
+        <GlobalStateProvider>
+        <BrowserRouter >
             <nav class="navbar navbar-expand-lg p-2 sticky-top navbar-dark bg-primary">
 
                 <Link<Route> classes={classes!("navbar-brand")} to={Route::Home}>
-                    {"IBKR client"}
+                    {"IBKR Client"}
                 </Link<Route>>
 
                 <div>
@@ -41,34 +34,16 @@ impl App {
 
                 </div>
             </nav>
-        }
-    }
-}
-
-impl Component for App {
-    type Message = Msg;
-    type Properties = ();
-
-    fn create(_ctx: &Context<Self>) -> Self {
-        App {}
-    }
-
-    fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
-        false
-    }
-
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        html! {
-            <BrowserRouter >
-                {self.view_nav(&ctx)}
-                <main>
-                    <Switch<Route> render={Switch::render(switch)} />
-                </main>
-            </BrowserRouter>
-        }
+            <main>
+                <Switch<Route> render={switch} />
+            </main>
+        </BrowserRouter>
+        <ErrorHandler />
+        </GlobalStateProvider>
     }
 }
 
 fn main() {
-    yew::start_app::<App>();
+    wasm_logger::init(wasm_logger::Config::default());
+    yew::Renderer::<App>::new().render();
 }
