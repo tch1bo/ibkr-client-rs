@@ -327,7 +327,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ibkr"
+name = "ibkr-client-rs"
 version = "0.1.0"
 dependencies = [
  "anyhow",
