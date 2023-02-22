@@ -1,9 +1,8 @@
 use yew::prelude::*;
 
-use super::super::components::error::set_global_error_message;
+// use super::super::components::error::set_global_error_message;
 use super::super::models::{GlobalStateContext, Position};
-use super::super::requests::get_all_positions;
-use log;
+use super::super::requests::{make_get_positions_url, make_state_updater_fn_for_get_request};
 
 #[function_component(PositionList)]
 pub fn position_list() -> Html {
@@ -11,28 +10,12 @@ pub fn position_list() -> Html {
 
     // Update the positions.
     let positions: UseStateHandle<Vec<Position>> = use_state_eq(|| vec![]);
-    {
-        let account_id = global_state.account_id.clone();
-        let account_id2 = global_state.account_id.clone();
-        let positions = positions.clone();
-        use_effect_with_deps(
-            move |_| {
-                if account_id.is_none() {
-                    return;
-                }
-                wasm_bindgen_futures::spawn_local(async move {
-                    match get_all_positions(account_id.unwrap().as_str()).await {
-                        Ok(fetched_positions) => {
-                            positions.set(fetched_positions);
-                        }
-                        Err(e) => set_global_error_message(global_state, e),
-                    }
-                });
-            },
-            account_id2,
-        );
-    }
-
+    let updater_fn = make_state_updater_fn_for_get_request(
+        global_state.clone(),
+        positions.clone(),
+        make_get_positions_url,
+    );
+    use_effect_with_deps(|_| updater_fn(), global_state.account_id.clone());
     html! {
         <div>
             <h2> {"Your positions"} </h2>

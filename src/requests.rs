@@ -1,8 +1,11 @@
-use super::models::{Account, Ledger, Position};
+use super::components::error::set_global_error_message;
+use super::models::Account;
+use super::models::GlobalStateContext;
 use anyhow::{bail, Context, Result};
 use gloo_net::http::Request;
 use log;
 use serde::de::DeserializeOwned;
+use yew::prelude::*;
 
 fn make_url(endpoint: &str) -> String {
     format!("/v1/api/{}", endpoint)
@@ -10,6 +13,7 @@ fn make_url(endpoint: &str) -> String {
 
 async fn get<T: DeserializeOwned>(endpoint: &str) -> Result<T> {
     let url = make_url(endpoint);
+    log::info!("requesting {:?}", url);
     Ok(Request::get(url.as_str())
         .send()
         .await
@@ -27,14 +31,40 @@ pub async fn get_account() -> Result<Account> {
     Ok(accounts.swap_remove(0))
 }
 
-pub async fn get_all_positions(account_id: &str) -> Result<Vec<Position>> {
-    let url = format!("/portfolio/{}/positions", account_id);
-    Ok(get::<Vec<Position>>(url.as_str()).await?)
+pub fn make_get_positions_url(account_id: &str) -> String {
+    format!("/portfolio/{}/positions", account_id)
 }
 
-pub async fn get_ledger(account_id: &str) -> Result<Ledger> {
-    let url = format!("/portfolio/{}/ledger", account_id);
-    Ok(get::<Ledger>(url.as_str()).await?)
+pub fn make_get_ledger_url(account_id: &str) -> String {
+    format!("/portfolio/{}/ledger", account_id)
+}
+
+pub fn make_state_updater_fn_for_get_request<UrlFnT: 'static, ModelT: 'static>(
+    global_state: GlobalStateContext,
+    state_handle: UseStateHandle<ModelT>,
+    url_fn: UrlFnT,
+) -> impl FnOnce()
+where
+    UrlFnT: FnOnce(&str) -> String,
+    ModelT: DeserializeOwned,
+{
+    || {
+        let account_id = global_state.account_id.clone();
+        if global_state.account_id.is_none() {
+            return;
+        }
+        let account_id = account_id.unwrap();
+        let url = url_fn(account_id.as_str());
+
+        wasm_bindgen_futures::spawn_local(async move {
+            match get(url.as_str()).await {
+                Ok(fetched) => {
+                    state_handle.set(fetched);
+                }
+                Err(e) => set_global_error_message(global_state, e),
+            }
+        });
+    }
 }
 
 // TODO: interesting endpoints:
