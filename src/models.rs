@@ -15,9 +15,13 @@ pub struct Position {
     pub conid: u32,
     #[serde(rename = "contractDesc")]
     pub contract_desc: String,
-    #[serde(rename = "assetClass")]
-    pub asset_class: String,
     pub currency: String,
+    #[serde(rename = "position")]
+    pub num_shares: f32,
+    #[serde(rename = "mktPrice")]
+    pub market_price: f32,
+    #[serde(rename = "mktValue")]
+    pub market_value: f32,
 }
 
 #[derive(Clone, PartialEq, Deserialize, Debug)]

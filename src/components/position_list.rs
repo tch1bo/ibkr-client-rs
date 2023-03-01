@@ -19,7 +19,15 @@ pub fn position_list() -> Html {
     html! {
         <div>
             <h2> {"Your positions"} </h2>
-            {positions.len()}
+            <ol>
+            {
+                positions.clone().iter().enumerate().map(|(index, position)| {
+                    html!{
+                        <li key={index}> { format!("{:?}", position) } </li>
+                    }
+                }).collect::<Html>()
+            }
+            </ol>
 
         </div>
     }

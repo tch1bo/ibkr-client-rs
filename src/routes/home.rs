@@ -1,6 +1,5 @@
 use yew::prelude::*;
 
-use super::super::components::position_list::PositionList;
 use super::super::models::{GlobalStateContext, Ledger};
 use super::super::requests::{make_get_ledger_url, make_state_updater_fn_for_get_request};
 
@@ -33,7 +32,6 @@ pub fn home() -> Html {
                     }
                 </ol>
             </div>
-            <PositionList/>
         </div>
     }
 }

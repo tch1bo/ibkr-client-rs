@@ -13,6 +13,8 @@ use yew_router::prelude::*;
 
 #[function_component(App)]
 fn app() -> Html {
+    let routes = vec![(Route::Home, "Home"), (Route::Positions, "Positions")];
+
     html! {
         <GlobalStateProvider>
         <BrowserRouter >
@@ -24,14 +26,19 @@ fn app() -> Html {
 
                 <div>
                     <ul class="navbar-nav mr-auto">
-                        <li class="nav-item active">
-                                <Link<Route> classes={classes!("nav-link")} to={Route::Home}>
-                                    { "Home" }
-                                </Link<Route>>
-                        </li>
-
+                        {
+                            routes.iter().enumerate().map(|(index, (route, text))| {
+                                let class = if index == 0 {"nav-item active"} else {"nav-item"};
+                                html!{
+                                        <li class={class}>
+                                                <Link<Route> classes={classes!("nav-link")} to={route.clone()}>
+                                                    { text }
+                                                </Link<Route>>
+                                        </li>
+                                }
+                            }).collect::<Html>()
+                        }
                     </ul>
-
                 </div>
             </nav>
             <main>
